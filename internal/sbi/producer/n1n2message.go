@@ -177,11 +177,11 @@ func N1N2MessageTransferProcedure(ueContextID string, reqUri string,
 	// UE is CM-Connected
 	if ue.CmConnect(anType) {
 		var (
-			nasPdu []byte
-			err    error
+			nasByteMsg []byte
+			err        error
 		)
 		if n1Msg != nil {
-			nasPdu, err = gmm_message.
+			nasByteMsg, err = gmm_message.
 				BuildDLNASTransport(ue, anType, n1MsgType, n1Msg, uint8(requestData.PduSessionId), nil, nil, 0)
 			if err != nil {
 				ue.ProducerLog.Errorf("Build DL NAS Transport error: %+v", err)
@@ -194,8 +194,8 @@ func N1N2MessageTransferProcedure(ueContextID string, reqUri string,
 				return nil, "", problemDetails, nil
 			}
 			if n2Info == nil {
-				ue.ProducerLog.Debug("Forward N1 Message to UE")
-				ngap_message.SendDownlinkNasTransport(ue.RanUe[anType], nasPdu, nil)
+				ue.ProducerLog.Warnln("Forward N1 Message to UE")
+				ngap_message.SendDownlinkNasTransport(ue.RanUe[anType], nasByteMsg, nil)
 				n1n2MessageTransferRspData = new(models.N1N2MessageTransferRspData)
 				n1n2MessageTransferRspData.Cause = models.N1N2MessageTransferCause_N1_N2_TRANSFER_INITIATED
 				return n1n2MessageTransferRspData, "", nil, nil
@@ -210,11 +210,11 @@ func N1N2MessageTransferProcedure(ueContextID string, reqUri string,
 				ue.ProducerLog.Debugln("AMF Transfer NGAP PDU Session Resource Setup Request from SMF")
 				if ue.RanUe[anType].InitialContextSetup {
 					list := ngapType.PDUSessionResourceSetupListSUReq{}
-					ngap_message.AppendPDUSessionResourceSetupListSUReq(&list, smInfo.PduSessionId, *smInfo.SNssai, nasPdu, n2Info)
+					ngap_message.AppendPDUSessionResourceSetupListSUReq(&list, smInfo.PduSessionId, *smInfo.SNssai, nasByteMsg, n2Info)
 					ngap_message.SendPDUSessionResourceSetupRequest(ue.RanUe[anType], nil, &list)
 				} else {
 					list := ngapType.PDUSessionResourceSetupListCxtReq{}
-					ngap_message.AppendPDUSessionResourceSetupListCxtReq(&list, smInfo.PduSessionId, *smInfo.SNssai, nasPdu, n2Info)
+					ngap_message.AppendPDUSessionResourceSetupListCxtReq(&list, smInfo.PduSessionId, *smInfo.SNssai, nasByteMsg, n2Info)
 					ngap_message.SendInitialContextSetupRequest(ue, anType, nil, &list, nil, nil, nil)
 					ue.RanUe[anType].InitialContextSetup = true
 				}
@@ -224,7 +224,7 @@ func N1N2MessageTransferProcedure(ueContextID string, reqUri string,
 			case models.NgapIeType_PDU_RES_MOD_REQ:
 				ue.ProducerLog.Debugln("AMF Transfer NGAP PDU Session Resource Modify Request from SMF")
 				list := ngapType.PDUSessionResourceModifyListModReq{}
-				ngap_message.AppendPDUSessionResourceModifyListModReq(&list, smInfo.PduSessionId, nasPdu, n2Info)
+				ngap_message.AppendPDUSessionResourceModifyListModReq(&list, smInfo.PduSessionId, nasByteMsg, n2Info)
 				ngap_message.SendPDUSessionResourceModifyRequest(ue.RanUe[anType], list)
 				n1n2MessageTransferRspData = new(models.N1N2MessageTransferRspData)
 				n1n2MessageTransferRspData.Cause = models.N1N2MessageTransferCause_N1_N2_TRANSFER_INITIATED
@@ -233,7 +233,7 @@ func N1N2MessageTransferProcedure(ueContextID string, reqUri string,
 				ue.ProducerLog.Debugln("AMF Transfer NGAP PDU Session Resource Release Command from SMF")
 				list := ngapType.PDUSessionResourceToReleaseListRelCmd{}
 				ngap_message.AppendPDUSessionResourceToReleaseListRelCmd(&list, smInfo.PduSessionId, n2Info)
-				ngap_message.SendPDUSessionResourceReleaseCommand(ue.RanUe[anType], nasPdu, list)
+				ngap_message.SendPDUSessionResourceReleaseCommand(ue.RanUe[anType], nasByteMsg, list)
 				n1n2MessageTransferRspData = new(models.N1N2MessageTransferRspData)
 				n1n2MessageTransferRspData.Cause = models.N1N2MessageTransferCause_N1_N2_TRANSFER_INITIATED
 				return n1n2MessageTransferRspData, "", nil, nil

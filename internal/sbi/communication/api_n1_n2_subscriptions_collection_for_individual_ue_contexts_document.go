@@ -23,6 +23,7 @@ import (
 
 func HTTPN1N2MessageSubscribe(c *gin.Context) {
 	var ueN1N2InfoSubscriptionCreateData models.UeN1N2InfoSubscriptionCreateData
+	logger.CommLog.Info("Handle HTTPN1N2MessageSubscribe")
 
 	requestBody, err := c.GetRawData()
 	if err != nil {

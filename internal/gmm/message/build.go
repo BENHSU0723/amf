@@ -19,7 +19,7 @@ import (
 	"github.com/free5gc/openapi/models"
 )
 
-func BuildDLNASTransport(ue *context.AmfUe, accessType models.AccessType, payloadContainerType uint8, nasPdu []byte,
+func BuildDLNASTransport(ue *context.AmfUe, accessType models.AccessType, payloadContainerType uint8, nasN1Msg []byte,
 	pduSessionId uint8, cause *uint8, backoffTimerUint *uint8, backoffTimer uint8,
 ) ([]byte, error) {
 	m := nas.NewMessage()
@@ -36,8 +36,8 @@ func BuildDLNASTransport(ue *context.AmfUe, accessType models.AccessType, payloa
 	dLNASTransport.SetExtendedProtocolDiscriminator(nasMessage.Epd5GSMobilityManagementMessage)
 	dLNASTransport.SetMessageType(nas.MsgTypeDLNASTransport)
 	dLNASTransport.SpareHalfOctetAndPayloadContainerType.SetPayloadContainerType(payloadContainerType)
-	dLNASTransport.PayloadContainer.SetLen(uint16(len(nasPdu)))
-	dLNASTransport.PayloadContainer.SetPayloadContainerContents(nasPdu)
+	dLNASTransport.PayloadContainer.SetLen(uint16(len(nasN1Msg)))
+	dLNASTransport.PayloadContainer.SetPayloadContainerContents(nasN1Msg)
 
 	if pduSessionId != 0 {
 		dLNASTransport.PduSessionID2Value = new(nasType.PduSessionID2Value)

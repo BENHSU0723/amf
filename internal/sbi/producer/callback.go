@@ -325,3 +325,22 @@ func N1MessageNotifyProcedure(n1MessageNotify models.N1MessageNotify) *models.Pr
 	}()
 	return nil
 }
+
+func HandleUePolicyControlUpdateNotify(request *httpwrapper.Request) {
+	logger.ProducerLog.Warnln("[AMF] The function of handling UE policy update does not implemented!!")
+	// logger.ProducerLog.Infoln("[AMF] Handle UE policy update notify")
+
+	// TODO: find the request data structure
+	// uePolCtlUpdNtf := request.Body.(models.N1MessageNotify)
+
+	// problemDetails := N1MessageNotifyProcedure(n1MessageNotify)
+	// if problemDetails != nil {
+	// 	return httpwrapper.NewResponse(int(problemDetails.Status), nil, problemDetails)
+	// } else {
+	// 	return httpwrapper.NewResponse(http.StatusNoContent, nil, nil)
+	// }
+}
+
+func UePolicyControlUpdateNotifyProcedure() {
+
+}

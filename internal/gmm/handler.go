@@ -768,7 +768,21 @@ func HandleInitialRegistration(ue *context.AmfUe, anType models.AccessType) erro
 		ue.Non3gppDeregTimerValue = amfSelf.Non3gppDeregTimerValue
 	}
 
+	// step 21. Registration Accept
 	gmm_message.SendRegistrationAccept(ue, anType, nil, nil, nil, nil, nil)
+
+	// step 21b. UE Policy Association Establishment
+	go func() {
+		// sleep a while to prevent registration onging error of N1N2 msg transfer
+		// time.Sleep(500 * time.Millisecond)
+		problemDetails, err = consumer.UEPolicyControlCreate(ue, anType)
+		if problemDetails != nil {
+			ue.GmmLog.Errorf("UE Policy Control Create Failed Problem[%+v]", problemDetails)
+		} else if err != nil {
+			ue.GmmLog.Errorf("UE Policy Control Create Error[%+v]", err)
+		}
+	}()
+
 	return nil
 }
 

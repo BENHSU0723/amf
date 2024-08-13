@@ -143,7 +143,7 @@ func SendNGResetAcknowledge(ran *context.AmfRan, partOfNGInterface *ngapType.UEA
 	SendToRan(ran, pkt)
 }
 
-func SendDownlinkNasTransport(ue *context.RanUe, nasPdu []byte,
+func SendDownlinkNasTransport(ue *context.RanUe, nasMsg []byte,
 	mobilityRestrictionList *ngapType.MobilityRestrictionList,
 ) {
 	if ue == nil {
@@ -153,11 +153,11 @@ func SendDownlinkNasTransport(ue *context.RanUe, nasPdu []byte,
 
 	ue.Log.Info("Send Downlink Nas Transport")
 
-	if len(nasPdu) == 0 {
+	if len(nasMsg) == 0 {
 		ue.Log.Errorf("Send DownlinkNasTransport Error: nasPdu is nil")
 	}
 
-	pkt, err := BuildDownlinkNasTransport(ue, nasPdu, mobilityRestrictionList)
+	pkt, err := BuildDownlinkNasTransport(ue, nasMsg, mobilityRestrictionList)
 	if err != nil {
 		ue.Log.Errorf("Build DownlinkNasTransport failed : %s", err.Error())
 		return
