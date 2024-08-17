@@ -3,6 +3,8 @@ package consumer
 import (
 	"context"
 
+	ben_ue_pol "github.com/BENHSU0723/openapi_public/Npcf_UEPolicy"
+	ben_mod "github.com/BENHSU0723/openapi_public/models"
 	amf_context "github.com/free5gc/amf/internal/context"
 	"github.com/free5gc/amf/internal/logger"
 	"github.com/free5gc/openapi"
@@ -13,25 +15,32 @@ import (
 // Request to PCF that create the UE policy
 func UEPolicyControlCreate(ue *amf_context.AmfUe, anType models.AccessType) (*models.ProblemDetails, error) {
 	logger.UePolicyLog.Info("Handle UEPolicyControlCreate !!")
-	configuration := Npcf_UEPolicy.NewConfiguration()
+	configuration := ben_ue_pol.NewConfiguration()
 	logger.UePolicyLog.Warnf("ue.PcfUri: %s", ue.PcfUri)
 	configuration.SetBasePath(ue.PcfUri) //TODO:cheackbase path is "/npcf-ue-policy-control/v1/"
-	client := Npcf_UEPolicy.NewAPIClient(configuration)
+	logger.UePolicyLog.Warnf(configuration.BasePath())
+	client := ben_ue_pol.NewAPIClient(configuration)
 
 	amfSelf := amf_context.GetSelf()
 
-	policyAssociationRequest := models.PolicyAssociationRequest{
+	policyAssociationRequest := ben_mod.PolicyAssociationRequest{
 		NotificationUri: amfSelf.GetIPv4Uri() + "/namf-callback/v1/ue-policy/",
 		Supi:            ue.Supi,
 		Pei:             ue.Pei,
 		Gpsi:            ue.Gpsi,
-		AccessType:      anType,
-		ServingPlmn: &models.NetworkId{
+		AccessType:      ben_mod.AccessType(anType),
+		ServingPlmn: &ben_mod.NetworkId{
 			Mcc: ue.PlmnId.Mcc,
 			Mnc: ue.PlmnId.Mnc,
 		},
 		GroupIds: ue.AccessAndMobilitySubscriptionData.InternalGroupIds,
-		Guami:    &amfSelf.ServedGuamiList[0],
+		Guami: &ben_mod.Guami{
+			PlmnId: &ben_mod.PlmnId{
+				Mcc: amfSelf.ServedGuamiList[0].PlmnId.Mcc,
+				Mnc: amfSelf.ServedGuamiList[0].PlmnId.Mnc,
+			},
+			AmfId: amfSelf.ServedGuamiList[0].AmfId,
+		},
 	}
 
 	//TODO: Process Reponse and replace _ with res
@@ -65,7 +74,7 @@ func UEPolicyControlCreate(ue *amf_context.AmfUe, anType models.AccessType) (*mo
 		if httpResp.Status != localErr.Error() {
 			return nil, localErr
 		}
-		problem := localErr.(Npcf_UEPolicy.GenericOpenAPIError).Model().(models.ProblemDetails)
+		problem := localErr.(ben_ue_pol.GenericOpenAPIError).Model().(models.ProblemDetails)
 		return &problem, nil
 	} else {
 		return nil, openapi.ReportError("server no response")
